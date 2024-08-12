@@ -32,8 +32,8 @@ function PokemonList(){
            const pokeResult = pokemonData.map((pokeData) => {
                   const pokemon = pokeData.data;
                   return {
-                    id:pokemon.id,
-                    name:pokemon.name, 
+                     id:pokemon.id,
+                     name:pokemon.name, 
                      image:(pokemon.sprites.other) ? pokemon.sprites.other.dream_world.front_default:pokemon.sprites.front_shiny,
                      types:pokemon.types,
                     }
@@ -56,7 +56,7 @@ function PokemonList(){
 
                <div className="pokemon-wrapper">
                     {(isLoading) ? 'Loading....' : 
-                     PokemonList.map((p) => <Pokemon name={p.name} image={p.image}  key={p.id} />)
+                     PokemonList.map((p) => <Pokemon name={p.name} image={p.image}  key={p.id} id={p.id} />)
                       }   
                </div>
                <div className="controls button">
@@ -68,6 +68,6 @@ function PokemonList(){
 
 
         
-    )
+    );
 }
 export default PokemonList;
