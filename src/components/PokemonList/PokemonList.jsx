@@ -5,22 +5,25 @@ import './PokemonList.css';
 import Pokemon from "../Pokemon/Pokemon"
 
 function PokemonList(){
-
-
-    const[PokemonList, setPokemonList] = useState([]);
-    const [isLoading, setIsLoading]=useState(true);
-    const [pokedexUrl, setpokedexUrl]=useState('https://pokeapi.co/api/v2/pokemon');
-    const [nextUrl,setNextUrl] =useState('');
-    const [prevUrl,setPrevUrl] =useState('');
-
-     async function downloadPokemon(){
-        setIsLoading(true);
-        const response = await axios.get(pokedexUrl)//this download  list of 20 pokemon
-             
-            const pokemonResults =response.data.results;//we get thr array of pokemon from result
-            console.log(response.data);
-            setNextUrl(response.data.next);
-            setPrevUrl(response.data.previous);
+    const [pokemonListState,setpokemonListState]=useState({
+        pokemonList:[],
+        isLoading:true,
+        pokedexUrl:'https://pokeapi.co/api/v2/pokemon',
+        nextUrl:'',
+        prevUrl:''
+    });
+    async function downloadPokemon(){
+       
+       setpokemonListState((state) =>({...state,isLoading:true}));
+        const response = await axios.get(pokemonListState.pokedexUrl)//this download  list of 20 pokemon
+             const pokemonResults =response.data.results;//we get thr array of pokemon from result
+             console.log(response.data);
+            setpokemonListState((state) => ({
+                ...state,
+                nextUrl: response.data.next,
+                prevUrl: response.data.previous
+            }));
+            
             //iterating over the array of pokemon and using their url to create an array of promise
             //that will doenlosf those 20 pokemon
            const pokemonResultPromise = pokemonResults.map((pokemon) => axios.get(pokemon.url));
@@ -29,7 +32,7 @@ function PokemonList(){
            const pokemonData=await axios.all(pokemonResultPromise);//array of 20 polemon detail data
            console.log(pokemonData);
            //now iterate on the data of each  pokemon,and extract id anme image and types
-           const pokeResult = pokemonData.map((pokeData) => {
+           const pokeListResult = pokemonData.map((pokeData) => {
                   const pokemon = pokeData.data;
                   return {
                      id:pokemon.id,
@@ -39,29 +42,37 @@ function PokemonList(){
                     }
 
             });
-            console.log(pokeResult);
-            setPokemonList(pokeResult);
+            console.log(pokeListResult);
+            setpokemonListState((state) => ({
+                ...state,
+                pokemonList:pokeListResult,
+                isLoading:false
+            }));
            
-
-           setIsLoading(false);
      }
     useEffect(() => {
         downloadPokemon();
        
-    },[pokedexUrl]);
+    },[pokemonListState.pokedexUrl]);
 
     return(
         <div className="Pokemon-list-wrapper">
                <div>Pokemon List</div> 
 
                <div className="pokemon-wrapper">
-                    {(isLoading) ? 'Loading....' : 
-                     PokemonList.map((p) => <Pokemon name={p.name} image={p.image}  key={p.id} id={p.id} />)
+                    {(pokemonListState.isLoading) ? 'Loading....' : 
+                     pokemonListState.pokemonList.map((p) => <Pokemon name={p.name} image={p.image}  key={p.id} id={p.id} />)
                       }   
                </div>
                <div className="controls button">
-                  <button disabled={prevUrl==null} onClick={() => setpokedexUrl(prevUrl)}>Prev</button>
-                  <button disabled={nextUrl==null} onClick={() => setpokedexUrl(nextUrl)} >Next</button>
+                  <button disabled={pokemonListState.prevUrl==null} onClick={() => {
+                     const UrlToSet=pokemonListState.prevUrl;
+                     setpokemonListState({...pokemonListState,pokedexUrl:UrlToSet})
+                    }}>Prev</button>
+                  <button disabled={pokemonListState.nextUrl==null} onClick={() =>{
+                    const UrlToSet=pokemonListState.nextUrl
+                    setpokemonListState({...pokemonListState,pokedexUrl: UrlToSet})
+                    }} >Next</button>
                </div>
 
         </div>
